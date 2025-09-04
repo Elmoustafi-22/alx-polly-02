@@ -17,17 +17,30 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
 
-    const formData = new FormData(event.currentTarget);
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
+    try {
+      const formData = new FormData(event.currentTarget);
+      const email = formData.get('email') as string;
+      const password = formData.get('password') as string;
 
-    const result = await login({ email, password });
+      if (!email || !password) {
+        setError('Email and password are required');
+        setLoading(false);
+        return;
+      }
 
-    if (result?.error) {
-      setError(result.error);
+      const result = await login({ email, password });
+
+      if (result?.error) {
+        setError(result.error);
+        setLoading(false);
+      } else {
+        // Redirect to polls page
+        window.location.href = '/polls'; // Full reload to pick up session
+      }
+    } catch (err) {
+      setError('An unexpected error occurred. Please try again.');
       setLoading(false);
-    } else {
-      window.location.href = '/polls'; // Full reload to pick up session
+      console.error(err);
     }
   };
 

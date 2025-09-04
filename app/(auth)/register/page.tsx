@@ -16,25 +16,42 @@ export default function RegisterPage() {
     event.preventDefault();
     setLoading(true);
     setError(null);
-    const formData = new FormData(event.currentTarget);
-    const name = formData.get('name') as string;
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
-    const confirmPassword = formData.get('confirmPassword') as string;
+    
+    try {
+      const formData = new FormData(event.currentTarget);
+      const name = formData.get('name') as string;
+      const email = formData.get('email') as string;
+      const password = formData.get('password') as string;
+      const confirmPassword = formData.get('confirmPassword') as string;
 
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      // Basic validation
+      if (!name || !email || !password) {
+        setError('All fields are required');
+        return;
+      }
+
+      if (password.length < 8) {
+        setError('Password must be at least 8 characters long');
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        setError('Passwords do not match');
+        return;
+      }
+
+      const result = await register({ name, email, password });
+
+      if (result?.error) {
+        setError(result.error);
+      } else {
+        window.location.href = '/polls'; // Full reload to pick up session
+      }
+    } catch (err) {
+      setError('An unexpected error occurred. Please try again.');
+      console.error(err);
+    } finally {
       setLoading(false);
-      return;
-    }
-
-    const result = await register({ name, email, password });
-
-    if (result?.error) {
-      setError(result.error);
-      setLoading(false);
-    } else {
-      window.location.href = '/polls'; // Full reload to pick up session
     }
   };
 
